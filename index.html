@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eclipse — Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chassis-1: #d8dade;
+    --chassis-2: #8f9296;
+    --chassis-edge: #b4b7bb;
+    --brass: #c4c7cb;
+    --brass-bright: #f0f1f3;
+    --brass-dim: #6e7175;
+    --glass-bg-1: #14140f;
+    --glass-bg-2: #0a0a07;
+    --face-cream: #ece4d0;
+    --face-shadow: #d8cbaa;
+    --hand-hour: #eceded;
+    --hand-min: #eceded;
+    --hand-sec: #c9302c;
+    --text-warm: #e0e1e3;
+    --text-dim: #97999c;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; min-height: 100vh; }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(ellipse at 50% -10%, #3a3f45 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 110%, #0e1012 0%, transparent 60%),
+      #0a0b0c;
+    font-family: 'Sora', sans-serif;
+    padding: 28px;
+  }
+
+  .cabinet {
+    width: 100%;
+    max-width: 360px;
+    background: linear-gradient(155deg, var(--chassis-1) 0%, var(--chassis-2) 65%);
+    border-radius: 26px;
+    padding: 22px 20px 26px;
+    position: relative;
+    box-shadow:
+      0 50px 100px -28px rgba(0,0,0,0.8),
+      0 1px 0 rgba(255,255,255,0.08) inset,
+      0 -12px 24px rgba(0,0,0,0.45) inset,
+      0 0 0 1px var(--chassis-edge);
+  }
+
+  .cabinet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 26px;
+    padding: 1px;
+    background: linear-gradient(155deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.04));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .brand {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 4px 8px 16px;
+  }
+
+  .brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: #2a2c2e;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  }
+
+  .brand-model {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+  }
+
+  .face-housing {
+    background: var(--chassis-2);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow:
+      0 6px 16px rgba(0,0,0,0.5) inset,
+      0 0 0 1px rgba(201,167,106,0.15);
+  }
+
+  /* Analog clock */
+  .analog-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
+
+  svg { display: block; }
+
+  .tick-major { stroke: #eceded; stroke-width: 2.5; }
+  .tick-minor { stroke: #6a6c6e; stroke-width: 1; }
+
+  .num {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    fill: #eceded;
+  }
+
+  .hand-hour { stroke: var(--hand-hour); stroke-linecap: round; }
+  .hand-min { stroke: var(--hand-min); stroke-linecap: round; }
+  .hand-sec { stroke: var(--hand-sec); stroke-linecap: round; }
+
+  .brand-mark {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    fill: var(--brass-dim);
+  }
+
+  /* Digital clock */
+  .digital-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 46px 10px;
+  }
+
+  .digital-time {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 46px;
+    letter-spacing: 2px;
+    color: var(--brass-bright);
+    text-shadow: 0 0 16px rgba(230,231,233,0.3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .digital-date {
+    margin-top: 12px;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: #2a2c2e;
+  }
+
+  .digital-secs {
+    font-size: 22px;
+    color: var(--brass-dim);
+    margin-left: 6px;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .toggle {
+    display: flex;
+    background: var(--chassis-2);
+    border-radius: 999px;
+    padding: 4px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4) inset, 0 0 0 1px rgba(201,167,106,0.15);
+  }
+
+  .toggle button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .toggle button.active {
+    background: linear-gradient(180deg, var(--brass-bright), var(--brass-dim));
+    color: #241d10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  @media (max-width: 380px) {
+    .brand-name { font-size: 19px; }
+    .digital-time { font-size: 38px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cabinet">
+  <div class="brand">
+    <span class="brand-name">Eclipse</span>
+    <span class="brand-model">NHD-05</span>
+  </div>
+
+  <div class="face-housing">
+    <div class="analog-wrap" id="analogWrap">
+      <svg id="clockSvg" width="290" height="290" viewBox="0 0 290 290"></svg>
+    </div>
+
+    <div class="digital-wrap" id="digitalWrap">
+      <div class="digital-time"><span id="digitalHM">00:00</span><span class="digital-secs" id="digitalSec">00</span></div>
+      <div class="digital-date" id="digitalDate">—</div>
+    </div>
+  </div>
+
+  <div class="toggle-row">
+    <div class="toggle">
+      <button id="btnAnalog" class="active">Analog</button>
+      <button id="btnDigital">Digital</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const svg = document.getElementById('clockSvg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const cx = 145, cy = 145, r = 128;
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  // Outer bezel ring (engraved metal edge)
+  svg.appendChild(el('circle', { cx, cy, r: r + 4, fill: 'none', stroke: '#5b5d60', 'stroke-width': 3, 'stroke-opacity': 0.6 }));
+  svg.appendChild(el('circle', { cx, cy, r: r + 1, fill: 'none', stroke: 'url(#bezelGrad)', 'stroke-width': 6 }));
+
+  // Face background
+  svg.appendChild(el('circle', { cx, cy, r, fill: 'url(#faceGrad)', stroke: '#8f9296', 'stroke-width': 1.5, 'stroke-opacity': 0.5 }));
+
+  const defs = el('defs', {});
+  const grad = el('radialGradient', { id: 'faceGrad', cx: '32%', cy: '28%', r: '85%' });
+  grad.appendChild(el('stop', { offset: '0%', 'stop-color': '#2a2c2e' }));
+  grad.appendChild(el('stop', { offset: '55%', 'stop-color': '#141516' }));
+  grad.appendChild(el('stop', { offset: '100%', 'stop-color': '#050506' }));
+  defs.appendChild(grad);
+
+  const bezelGrad = el('linearGradient', { id: 'bezelGrad', x1: '0%', y1: '0%', x2: '100%', y2: '100%' });
+  bezelGrad.appendChild(el('stop', { offset: '0%', 'stop-color': '#f0f1f3' }));
+  bezelGrad.appendChild(el('stop', { offset: '50%', 'stop-color': '#8f9296' }));
+  bezelGrad.appendChild(el('stop', { offset: '100%', 'stop-color': '#c4c7cb' }));
+  defs.appendChild(bezelGrad);
+
+  svg.insertBefore(defs, svg.firstChild);
+
+  // inner rim
+  svg.appendChild(el('circle', { cx, cy, r: r - 10, fill: 'none', stroke: '#8f9296', 'stroke-width': 1, 'stroke-opacity': 0.3 }));
+
+  // Ticks
+  for (let i = 0; i < 60; i++) {
+    const angle = (i * 6) * Math.PI / 180;
+    const isMajor = i % 5 === 0;
+    const outerR = r - 8;
+    const innerR = isMajor ? r - 20 : r - 14;
+    const x1 = cx + outerR * Math.sin(angle);
+    const y1 = cy - outerR * Math.cos(angle);
+    const x2 = cx + innerR * Math.sin(angle);
+    const y2 = cy - innerR * Math.cos(angle);
+    svg.appendChild(el('line', { x1, y1, x2, y2, class: isMajor ? 'tick-major' : 'tick-minor' }));
+  }
+
+  // Numerals
+  for (let n = 1; n <= 12; n++) {
+    const angle = (n * 30) * Math.PI / 180;
+    const numR = r - 38;
+    const x = cx + numR * Math.sin(angle);
+    const y = cy - numR * Math.cos(angle);
+    const t = el('text', { x, y: y + 7, class: 'num', 'font-size': 20, 'text-anchor': 'middle' });
+    t.textContent = n;
+    svg.appendChild(t);
+  }
+
+  // Brand mark on face
+  const brandText = el('text', { x: cx, y: cy + 46, class: 'brand-mark', 'text-anchor': 'middle' });
+  brandText.textContent = 'ECLIPSE';
+  svg.appendChild(brandText);
+
+  // Hands
+  const hourHand = el('line', { x1: cx, y1: cy, x2: cx, y2: cy - 62, class: 'hand-hour', 'stroke-width': 6 });
+  const minHand = el('line', { x1: cx, y1: cy, x2: cx, y2: cy - 92, class: 'hand-min', 'stroke-width': 4 });
+  const secHand = el('line', { x1: cx, y1: cy + 16, x2: cx, y2: cy - 100, class: 'hand-sec', 'stroke-width': 1.5 });
+  svg.appendChild(hourHand);
+  svg.appendChild(minHand);
+  svg.appendChild(secHand);
+
+  // Center cap
+  svg.appendChild(el('circle', { cx, cy, r: 7, fill: '#c4c7cb' }));
+  svg.appendChild(el('circle', { cx, cy, r: 3, fill: '#0a0a0a' }));
+
+  // Sapphire-glass reflection sweep (sits above hands, like real crystal glare)
+  const glarePath = el('path', {
+    d: `M ${cx - r * 0.7} ${cy - r * 0.75} A ${r} ${r} 0 0 1 ${cx + r * 0.3} ${cy - r * 0.95}
+        L ${cx + r * 0.1} ${cy - r * 0.55}
+        A ${r * 0.6} ${r * 0.6} 0 0 0 ${cx - r * 0.55} ${cy - r * 0.4} Z`,
+    fill: 'rgba(255,255,255,0.14)'
+  });
+  svg.appendChild(glarePath);
+
+  const digitalHM = document.getElementById('digitalHM');
+  const digitalSec = document.getElementById('digitalSec');
+  const digitalDate = document.getElementById('digitalDate');
+
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function pad(n) { return n.toString().padStart(2, '0'); }
+
+  function update() {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    const s = now.getSeconds();
+
+    const hourAngle = ((h % 12) + m / 60) * 30;
+    const minAngle = (m + s / 60) * 6;
+    const secAngle = s * 6;
+
+    hourHand.setAttribute('transform', `rotate(${hourAngle} ${cx} ${cy})`);
+    minHand.setAttribute('transform', `rotate(${minAngle} ${cx} ${cy})`);
+    secHand.setAttribute('transform', `rotate(${secAngle} ${cx} ${cy})`);
+
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    const ampm = h < 12 ? 'AM' : 'PM';
+    digitalHM.textContent = `${pad(h12)}:${pad(m)} ${ampm}`;
+    digitalSec.textContent = pad(s);
+    digitalDate.textContent = `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+  }
+
+  update();
+  setInterval(update, 1000);
+
+  // Toggle logic
+  const analogWrap = document.getElementById('analogWrap');
+  const digitalWrap = document.getElementById('digitalWrap');
+  const btnAnalog = document.getElementById('btnAnalog');
+  const btnDigital = document.getElementById('btnDigital');
+
+  btnAnalog.addEventListener('click', () => {
+    analogWrap.style.display = 'flex';
+    digitalWrap.style.display = 'none';
+    btnAnalog.classList.add('active');
+    btnDigital.classList.remove('active');
+  });
+
+  btnDigital.addEventListener('click', () => {
+    analogWrap.style.display = 'none';
+    digitalWrap.style.display = 'flex';
+    btnDigital.classList.add('active');
+    btnAnalog.classList.remove('active');
+  });
+})();
+</script>
+
+</body>
+</html>
